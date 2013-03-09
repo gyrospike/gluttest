@@ -8,88 +8,142 @@
 // in C there seems to be a real difference between single and double quotes... are single quotes for chars
 // and double quotes for strings
 
-// currently trying to get concatChars to work, getting back rubbish on return, something wrong with pointers?
+// if you want to return an array from a function you need to malloc that memory block else the memory will
+// be GCed after the function returns
 
-GLubyte mIndicies[] = {0, 1, 2, 2, 4, 3};
+// in C you can't define a variable in a swtich statement case block unless you wrap the whole block in parens
+
+// current challenge: how can we define our mIndicies and mVerts as globals when we want the data file we
+// load to define the length of these arrays? - I think I have a lead, define the max size, then load the file, then
+// populate only as much as you need to
+
+#define ALLOC_INDICIES 10
+#define ALLOC_VERTS 20
+
+int mIndiciesUsed;
+GLubyte mIndicies[ALLOC_INDICIES];
+
+int mVertsUsed;
+GLfloat mVerts[ALLOC_VERTS];
 
 // 0 - bottom left
 // 1 - top left
 // 2 - top right 
 // 3 - bottom right
 // 4 - top far right
-GLfloat mVerts[] = {
-	-0.5, -0.5,
-	-0.5, 0.5,
-	0.5, 0.5, 
-	0.5, -0.5,
-	1.5, 0.5
-};
 
-char* concatChars(char* first, int sizeFirst, char* second, int sizeSecond) {
-	int newStringSize = sizeFirst + sizeSecond - 1;
-	char result[newStringSize];
-	for(int p = 0; p < newStringSize; p++) {
-		result[p] = 'X';
+void loadData() {
+
+mIndiciesUsed = 6;
+
+mIndicies[0] = 0;
+mIndicies[1] = 1;
+mIndicies[2] = 2;
+mIndicies[3] = 2;
+mIndicies[4] = 4;
+mIndicies[5] = 3;
+
+mVertsUsed = 10;
+
+mVerts[0] = -0.5;
+mVerts[1] = -0.5;
+mVerts[2] = -0.5;
+mVerts[3] = 0.5;
+mVerts[4] = 0.5;
+mVerts[5] = 0.5;
+mVerts[6] = 0.5;
+mVerts[7] = -0.5;
+mVerts[8] = 1.5;
+mVerts[9] = 0.5;
+
+/*
+char * buffer = 0;
+long length;
+FILE * f = fopen (filename, "rb");
+
+if (f)
+{
+  fseek (f, 0, SEEK_END);
+  length = ftell (f);
+  fseek (f, 0, SEEK_SET);
+  buffer = malloc (length);
+  if (buffer)
+  {
+    fread (buffer, 1, length, f);
+  }
+  fclose (f);
+}
+*/
+
+}
+
+/*
+Combine two char arrays and permanently set aside memory for resulting array
+*/
+char * concatChars(size_t sizeA, char * a, size_t sizeB, char * b) {	
+	size_t resultLength = sizeA + sizeB - 1;
+	char * result = malloc(resultLength * sizeof(char));
+	
+	for(int i = 0; i < sizeA-1; i++) {
+		//printf("i: %zu\n", i);
+		result[i] = a[i];
 	}
-	for(int i = 0; i < sizeFirst; i++) {
-		printf("%c\n", first[i]);
-		result[i] = first[i];
+	for(int j = 0; j < sizeB-1; j++) {
+		//printf("sizeA -1 + j: %zu\n", sizeA -1 + j);
+		result[sizeA - 1 + j] = b[j];
 	}
-	printf("%s\n", result);
-	//for(int j = 0; j < sizeSecond-1; j++) {
-	//	result[sizeFirst - 2 + j] = second[j];
-	//}
-	//result[newStringSize-1] = '\0';
+	result[resultLength - 1] = '\0';
 	return result;
 }
 
+void printLessonOnSizeOf() {
+	int testOne[] = {0, 1, 2, 3};	
+
+	size_t sizeArrBytes = sizeof(testOne);
+	printf("The size of the array in bytes: %zu\n", sizeArrBytes);
+	
+	size_t sizeElementBytes = sizeof(testOne[0]);
+	printf("The size of first element: %zu\n", sizeElementBytes);
+
+	int lengthArray = sizeArrBytes/sizeElementBytes;
+	printf("The length of the array: %zu\n", lengthArray);
+}
+
 void onKeyPress(unsigned char key, int mouseX, int mouseY) {
+
+	// two different ways of showing which was pressed
+	char testMessage[] = "you pressed key: X";
+	testMessage[sizeof(testMessage)-2] = key;
+	printf("%s\n", testMessage);
 	
 	/*
-	std::size_t len = std::strlen ( s );
-  	char *ret = new char[len + 2];
-  	std::strcpy ( ret, s );
-  	ret[len] = c;
-  	ret[len + 1] = '\0';
-	*/
-
-	char* sample = "here is sample";
-	printf("%s\n", sample);
-
-	char array[4];
-	array[0] = 'a';
-	array[1] = 'b';
-	array[2] = 'c';
-	array[3] = '\0';
-	//printf("%s\n", array);
-
-	char first[] = "hello again";
-	// prints the whole string 'hello again'
-	//printf("%s\n", first);
-	// prints 'e'
-	//printf("%c\n", first[1]);
-	//first[1] = 'p';
-	//printf("%s\n", first);
-
-	//char second[2];
-	//second[0] = key;
-	// have to use single quotes when assigning the special end string character
-	//second[1] = '\0';
-	//printf("%s\n", second);	
-
-	char second[] = " there";
-
-	char* message = concatChars(first, sizeof(first), second, sizeof(second));
-	printf("%s\n", "message: ");
+	char introString[] = "you pressed key: ";
+	char keyArray[2];
+	keyArray[0] = key;
+	keyArray[1] = '\0';
+	char * message = concatChars(sizeof(introString), introString, sizeof(keyArray), keyArray);
 	printf("%s\n", message);
-	
+	*/	
+
 	switch(key) {
-		case 'w':
-			mVerts[0] = -2.0;
-			mVerts[1] = -2.0;
-			mVerts[2] = -2.0;
-			mVerts[3] = 2.0;		
+		case 'h': {
+			printLessonOnSizeOf();
 			break;
+		}
+		case 'w': {
+			mVerts[0] = mVerts[0] - 1.0;
+			mVerts[1] = mVerts[1] - 1.0;
+			mVerts[2] = mVerts[2] - 1.0;
+			mVerts[3] = mVerts[3] - 1.0;		
+			break;
+		}
+		case 'e': {
+			int sizeOfArray = (sizeof(mVerts)/sizeof(mVerts[0]));
+			for(int i = 0; i < sizeOfArray; i++) {
+				mVerts[i] = mVerts[i] * 1.2;	
+			}
+			break;
+		}
 	}
 }
 
@@ -106,23 +160,30 @@ void onDraw() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glOrtho(-5.0, 5.0, -5.0, 5.0, 0.0, 1.0);
+
+	//printf("num indicies used: %zu\n", mIndiciesUsed);
+	//printf("num verts used: %zu\n", mVertsUsed);
 	
-	int numInd = sizeof(mIndicies);
-	int numComponentsPerCoord = 2;	
+	int sizeOfmIndicies = mIndiciesUsed  * sizeof(GLubyte);
+	int sizeOfmVerts = mVertsUsed * sizeof(GLfloat);
+	int numComponentsPerCoord = 2;
 
-	// example of how to print an int
-	// printf("The size of integer is %zu\n", numInd);
+	//int sizeElementInVerts = sizeof(mVerts[0]);
+	//printf("size of element in verts: %zu\n", sizeElementInVerts);
 
+	//printf("size of used verts array: %zu\n", sizeOfmVerts);
+	//printf("size of used indicies array: %zu\n", sizeOfmIndicies);
+	
 	// this is done for VBOs only
 	GLuint vboVert;
 	glGenBuffersARB(1, &vboVert);
 	glBindBufferARB(GL_ARRAY_BUFFER_ARB, vboVert);
-	glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(mVerts), mVerts, GL_STATIC_DRAW_ARB);	
+	glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeOfmVerts, mVerts, GL_STATIC_DRAW_ARB);	
 
 	GLuint vboInd;
 	glGenBuffersARB(1, &vboInd);
 	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vboInd);
-	glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, sizeof(mIndicies), mIndicies, GL_STATIC_DRAW_ARB);
+	glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, sizeOfmIndicies, mIndicies, GL_STATIC_DRAW_ARB);
 
 	glBindBufferARB(GL_ARRAY_BUFFER_ARB, vboVert);         // for vertex coordinates
 	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vboInd);  // for indices
@@ -140,7 +201,7 @@ void onDraw() {
 
 	// drawing with vertex arrays (not VBOs)
 	//glDrawElements(GL_TRIANGLES, numInd, GL_UNSIGNED_BYTe, indicies);
-	glDrawElements(GL_TRIANGLES, numInd, GL_UNSIGNED_BYTE, 0);
+	glDrawElements(GL_TRIANGLES, sizeOfmIndicies, GL_UNSIGNED_BYTE, 0);
 	
 	// bind back to "head" index of 0
 	glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
@@ -163,7 +224,9 @@ void onIdle(void) {
 the freeglut library does the window creation work for us, 
 regardless of the platform. */
 int main(int argc, char** argv) {
-	// NOTE: currently trying to figure out how to get the display to refresh, only draws scene once 
+	
+	loadData();
+
 	glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_SINGLE | GLUT_RGBA);
 	glutInitWindowSize(500,500);
